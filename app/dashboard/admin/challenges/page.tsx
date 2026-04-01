@@ -1,5 +1,6 @@
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { Challenge } from '@prisma/client';
 import { redirect } from 'next/navigation';
 import { CreateChallengeForm } from '@/app/components/admin/create-challenge-form';
 import { Trash2, AlertCircle } from 'lucide-react';
@@ -26,7 +27,7 @@ export default async function AdminChallengesPage() {
             <CreateChallengeForm />
 
             <div className="grid grid-cols-1 gap-4">
-                {challenges.map(chal => (
+                {challenges.map((chal: Challenge) => (
                     <div key={chal.id} className="p-6 rounded-xl border border-white/10 bg-white/5 flex items-center justify-between group hover:border-white/20 transition-all">
                         <div className="flex-1">
                             <div className="flex items-center space-x-3 mb-2">
@@ -46,7 +47,7 @@ export default async function AdminChallengesPage() {
                             </div>
                         </div>
 
-                        <form action={async (formData) => {
+                        <form action={async (formData: FormData) => {
                             'use server';
                             await deleteChallenge(null, formData);
                         }}>
