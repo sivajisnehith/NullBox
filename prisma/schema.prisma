@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 generator client {
@@ -7,46 +7,46 @@ generator client {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  registrationNumber String @unique
-  username  String   @unique
-  password  String
-  role      String   @default("user") // "admin" or "user"
-  teamId    String?
-  team      Team?    @relation(fields: [teamId], references: [id])
-  createdAt DateTime @default(now())
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  registrationNumber String   @unique
+  username           String   @unique
+  password           String
+  role               String   @default("user") // "admin" or "user"
+  teamId             String?
+  team               Team?    @relation(fields: [teamId], references: [id])
+  createdAt          DateTime @default(now())
 }
 
 model Team {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  joinCode    String   @unique
+  id          String       @id @default(cuid())
+  name        String       @unique
+  joinCode    String       @unique
   members     User[]
-  score       Int      @default(0)
+  score       Int          @default(0)
   submissions Submission[]
   containers  Container[]
-  createdAt   DateTime @default(now())
+  createdAt   DateTime     @default(now())
 }
 
 model Challenge {
-  id          String   @id @default(uuid())
-  title       String
-  description String
-  category    String   // e.g. "Web", "Pwn", "Crypto"
-  points      Int
-  imageName   String?  // Docker image name, e.g. "ctf-challenge-1"
-  internalPort Int?    // The port the service runs on inside the container
-  flag        String
-  submissions Submission[]
-  containers  Container[] // Active containers for this challenge
-  hints       Hint[]
-  resources   Resource[]
-  createdAt   DateTime @default(now())
+  id           String       @id @default(cuid())
+  title        String
+  description  String
+  category     String       // e.g. "Web", "Pwn", "Crypto"
+  points       Int
+  imageName    String?      // Docker image name, e.g. "ctf-challenge-1"
+  internalPort Int?         // The port the service runs on inside the container
+  flag         String
+  submissions  Submission[]
+  containers   Container[]  // Active containers for this challenge
+  hints        Hint[]
+  resources    Resource[]
+  createdAt    DateTime     @default(now())
 }
 
 model Hint {
-  id          String    @id @default(uuid())
+  id          String    @id @default(cuid())
   content     String
   cost        Int       @default(0) // Points deducted for viewing
   challengeId String
@@ -54,7 +54,7 @@ model Hint {
 }
 
 model Resource {
-  id          String    @id @default(uuid())
+  id          String    @id @default(cuid())
   title       String
   url         String
   challengeId String
@@ -62,25 +62,25 @@ model Resource {
 }
 
 model Submission {
-  id          String   @id @default(uuid())
+  id          String    @id @default(cuid())
   teamId      String
-  team        Team     @relation(fields: [teamId], references: [id])
+  team        Team      @relation(fields: [teamId], references: [id])
   challengeId String
   challenge   Challenge @relation(fields: [challengeId], references: [id])
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
   isCorrect   Boolean
-  
+
   @@unique([teamId, challengeId]) // Ensure one successful submission per team per challenge
 }
 
 model Container {
-  id          String   @id @default(uuid())
-  containerId String   // Docker container ID
+  id          String    @id @default(cuid())
+  containerId String    // Docker container ID
   teamId      String
-  team        Team     @relation(fields: [teamId], references: [id])
+  team        Team      @relation(fields: [teamId], references: [id])
   challengeId String
   challenge   Challenge @relation(fields: [challengeId], references: [id])
-  hostPort    Int      // The port exposed on the host machine
-  createdAt   DateTime @default(now())
+  hostPort    Int       // The port exposed on the host machine
+  createdAt   DateTime  @default(now())
   expiresAt   DateTime
 }
