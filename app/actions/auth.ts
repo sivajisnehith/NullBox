@@ -13,13 +13,19 @@ export async function login(prevState: any, formData: FormData) {
         return { error: 'Please provide both registration number and password' };
     }
 
-    const user = await prisma.user.findUnique({ where: { registrationNumber } });
+    try {
+        const user = await prisma.user.findUnique({ where: { registrationNumber } });
 
-    if (!user || !bcrypt.compareSync(password, user.password)) {
-        return { error: 'Invalid credentials' };
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return { error: 'Invalid credentials' };
+        }
+
+        await setSession({ userId: user.id, username: user.username, role: user.role });
+    } catch (e) {
+        console.error('[LOGIN ERROR]', e);
+        return { error: 'An error occurred while logging in. Check your database connection.' };
     }
 
-    await setSession({ userId: user.id, username: user.username, role: user.role });
     redirect('/dashboard');
 }
 
@@ -30,7 +36,7 @@ export async function register(prevState: any, formData: FormData) {
     const password = formData.get('password') as string;
 
     if (!email || !username || !password || !registrationNumber) {
-        return { error: "All fields are required" };
+        return { error: 'All fields are required' };
     }
 
     try {
@@ -39,10 +45,10 @@ export async function register(prevState: any, formData: FormData) {
         });
 
         if (existingUser) {
-            return { error: "User with this email, username, or registration number already exists" };
+            return { error: 'A user with this email, username, or registration number already exists' };
         }
 
-        const hashedPassword = bcrypt.hashSync(password, 10);
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = await prisma.user.create({
             data: {
@@ -50,14 +56,16 @@ export async function register(prevState: any, formData: FormData) {
                 username,
                 registrationNumber,
                 password: hashedPassword,
+                role: 'user',
             },
         });
 
         await setSession({ userId: user.id, username: user.username, role: user.role });
     } catch (e) {
-        console.error(e);
-        return { error: "An error occurred during registration" };
+        console.error('[REGISTER ERROR]', e);
+        return { error: 'An error occurred during registration. Check your database connection.' };
     }
+
     redirect('/dashboard');
 }
 
