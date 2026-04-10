@@ -65,18 +65,21 @@ export function ChallengeInterface({ challenge, activeContainer, isSolved }: Cha
                                 Intel & Resources
                             </h3>
                             <div className="space-y-2">
-                                {challenge.resources.map((res: any) => (
-                                    <a
-                                        key={res.id}
-                                        href={res.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-between p-3 bg-black/40 border border-white/5 hover:border-primary/50 hover:bg-black/60 transition-all group"
-                                    >
-                                        <span className="text-sm font-mono text-muted-foreground group-hover:text-white transition-colors">{res.title}</span>
-                                        <ExternalLink size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
-                                    </a>
-                                ))}
+                                {challenge.resources.map((res: any) => {
+                                    const absoluteUrl = res.url?.startsWith('http') ? res.url : `http://${res.url}`;
+                                    return (
+                                        <a
+                                            key={res.id}
+                                            href={absoluteUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center justify-between p-3 bg-black/40 border border-white/5 hover:border-primary/50 hover:bg-black/60 transition-all group"
+                                        >
+                                            <span className="text-sm font-mono text-muted-foreground group-hover:text-white transition-colors">{res.title}</span>
+                                            <ExternalLink size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                                        </a>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}

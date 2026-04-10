@@ -36,8 +36,10 @@ export async function createChallenge(prevState: any, formData: FormData) {
                 },
                 resources: {
                     create: (formData.get('resources') as string)?.split('\n').filter(r => r.trim()).map(r => {
-                        const [title, url] = r.split('|');
-                        return { title: title?.trim() || 'Resource', url: url?.trim() || '#' };
+                        const [title, rawUrl] = r.split('|');
+                        const url = rawUrl?.trim();
+                        const sanitizedUrl = (url?.startsWith('http://') || url?.startsWith('https://')) ? url : `http://${url}`;
+                        return { title: title?.trim() || 'Resource', url: sanitizedUrl || '#' };
                     }) || []
                 }
             }
