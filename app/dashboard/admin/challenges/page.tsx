@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { CreateChallengeForm } from '@/app/components/admin/create-challenge-form';
 import { Trash2, AlertCircle } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
-import { deleteChallenge } from '@/app/actions/admin';
+import { DeleteChallengeButton } from '@/app/components/admin/delete-challenge-button';
 
 export default async function AdminChallengesPage() {
     const session = await getSession();
@@ -47,15 +47,7 @@ export default async function AdminChallengesPage() {
                             </div>
                         </div>
 
-                        <form action={async (formData: FormData) => {
-                            'use server';
-                            await deleteChallenge(null, formData);
-                        }}>
-                            <input type="hidden" name="id" value={chal.id} />
-                            <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-red-500 hover:bg-red-500/10">
-                                <Trash2 size={18} />
-                            </Button>
-                        </form>
+                        <DeleteChallengeButton id={chal.id} />
                     </div>
                 ))}
 

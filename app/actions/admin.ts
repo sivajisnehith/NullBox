@@ -60,16 +60,32 @@ export async function deleteChallenge(prevState: any, formData: FormData) {
     if (!id) return { error: "No ID provided" };
 
     try {
+        // 1. Get all containers for this challenge
+        const containers = await prisma.container.findMany({ where: { challengeId: id } });
+        
+        // 2. Stop all Docker containers to avoid orphans
+        for (const container of containers) {
+            try {
+                await stopContainer(container.containerId);
+            } catch (err) {
+                console.error(`Failed to stop container ${container.containerId}`, err);
+            }
+        }
+
+        // 3. Delete related data manually (since cascade is only on Hints/Resources)
         await prisma.submission.deleteMany({ where: { challengeId: id } });
         await prisma.container.deleteMany({ where: { challengeId: id } });
 
+        // 4. Delete the challenge itself
         await prisma.challenge.delete({ where: { id } });
 
         revalidatePath('/dashboard/admin/challenges');
-        return { success: true, message: "Challenge decommissioned" };
+        revalidatePath('/dashboard/challenges'); // Update user view
+        revalidatePath('/dashboard/admin'); // Update stats
+        return { success: true, message: "Challenge decommissioned and all resources cleared." };
     } catch (e) {
-        console.error(e);
-        return { error: "Failed to delete challenge" };
+        console.error('Delete Challenge Error:', e);
+        return { error: e instanceof Error ? e.message : "Failed to delete challenge" };
     }
 }
 
