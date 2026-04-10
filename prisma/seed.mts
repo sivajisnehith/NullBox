@@ -1,16 +1,8 @@
 import 'dotenv/config'
 import bcrypt from 'bcryptjs'
 import { PrismaClient } from '@prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
 
-const connectionString = process.env.DATABASE_URL
-if (!connectionString) {
-  throw new Error('DATABASE_URL is required for seeding')
-}
-
-const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString })
-})
+const prisma = new PrismaClient()
 
 async function main() {
   const adminPassword = process.env.ADMIN_PASSWORD || 'Viper$Trike_CmD_99!'

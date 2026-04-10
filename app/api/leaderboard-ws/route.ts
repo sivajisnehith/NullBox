@@ -14,7 +14,7 @@ export async function GET() {
     }
   });
 
-  const sorted = teams.sort((a, b) => {
+  const sorted = teams.sort((a: any, b: any) => {
     if (b.score !== a.score) return b.score - a.score;
     const aLast = a.submissions.at(-1)?.createdAt.getTime() ?? 0;
     const bLast = b.submissions.at(-1)?.createdAt.getTime() ?? 0;
