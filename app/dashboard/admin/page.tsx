@@ -4,16 +4,18 @@ import { redirect } from 'next/navigation';
 import { Users, Shield, Flag, LayoutGrid } from 'lucide-react';
 import Link from 'next/link';
 import { resetScores } from '@/app/actions/admin';
+import { DeleteChallengeButton } from '@/app/components/admin/delete-challenge-button';
 
 export default async function AdminDashboard() {
     const session = await getSession();
     if (!session || session.role !== 'admin') redirect('/dashboard');
 
-    const [userCount, teamCount, challengeCount, containerCount] = await Promise.all([
+    const [userCount, teamCount, challengeCount, containerCount, challenges] = await Promise.all([
         prisma.user.count(),
         prisma.team.count(),
         prisma.challenge.count(),
-        prisma.container.count()
+        prisma.container.count(),
+        prisma.challenge.findMany({ orderBy: { createdAt: 'desc' } })
     ]);
 
     return (
@@ -46,17 +48,42 @@ export default async function AdminDashboard() {
 
                 <div className="p-8 rounded-xl border border-red-500/30 bg-red-500/5">
                     <h2 className="text-2xl font-bold font-mono mb-2 text-red-500">System Override</h2>
-                    <p className="text-muted-foreground mb-6">Dangerous operation. Reset all unit scores and purge submission logs. This Action cannot be undone.</p>
+                    <p className="text-muted-foreground mb-6">Dangerous operation. Reset all unit scores and purge submission logs.</p>
                     <form action={async () => {
                         'use server';
                         await resetScores();
                     }}>
                         <button type="submit" className="px-4 py-2 bg-red-500/10 border border-red-500/50 text-red-500 font-mono text-sm uppercase tracking-wider hover:bg-red-500 hover:text-white transition-all rounded">
-                            Reset Competition Scores
+                            Reset Competition
                         </button>
                     </form>
                 </div>
             </div>
+
+            <section className="mt-12">
+                <div className="flex items-center space-x-4 mb-6">
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10" />
+                    <h2 className="text-2xl font-black italic uppercase tracking-widest text-white/50">Mission Registry</h2>
+                    <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/10" />
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                    {challenges.map((chal) => (
+                        <div key={chal.id} className="p-4 rounded-lg border border-white/5 bg-black/20 flex items-center justify-between hover:border-primary/30 transition-all">
+                            <div className="flex items-center space-x-4">
+                                <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 border border-primary/20">#{chal.id.slice(-4)}</span>
+                                <span className="font-bold font-mono text-white">{chal.title}</span>
+                                <span className="text-[10px] text-muted-foreground uppercase tracking-widest bg-white/5 px-2 py-0.5">{chal.category}</span>
+                            </div>
+                            <div className="flex items-center space-x-6">
+                                <span className="text-xs font-mono text-muted-foreground">{chal.points} PTS</span>
+                                <DeleteChallengeButton id={chal.id} />
+                            </div>
+                        </div>
+                    ))}
+                    {challenges.length === 0 && <p className="text-center text-muted-foreground italic font-mono py-8">No missions registered.</p>}
+                </div>
+            </section>
         </div>
     )
 }
