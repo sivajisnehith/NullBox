@@ -35,9 +35,10 @@ export async function setSession(payload: any) {
     const cookieStore = await cookies();
     cookieStore.set('session', session, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: false,
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
         path: '/',
+        sameSite: 'lax'
     });
 }
 
